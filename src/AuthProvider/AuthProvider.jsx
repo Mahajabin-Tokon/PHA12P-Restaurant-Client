@@ -11,6 +11,7 @@ import {
 import React, { createContext, useEffect, useState } from "react";
 import auth from "../firebase/firebase.config";
 import axios from "axios";
+import useAxiosPublic from "../Hooks/useAxiosPublic";
 
 export const authContext = createContext();
 
@@ -18,6 +19,7 @@ const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [emailReference, setEmailReference] = useState("");
+  const axiosPublic = useAxiosPublic();
 
   const provider = new GoogleAuthProvider();
   const handleRegister = (email, password) => {
@@ -41,12 +43,18 @@ const AuthProvider = ({ children }) => {
   const handleLogout = () => {
     return signOut(auth);
   };
-
+ 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       if (currentUser?.email) {
         setUser(currentUser);
-        console.log("Curernt User:", currentUser)
+        console.log("Curernt User:", currentUser);
+        const userInfo = { email: currentUser.email };
+        axiosPublic.post("/jwt", userInfo).then((res) => {
+          if (res.data.token) {
+            localStorage.setItem("access-token", res.data.token);
+          }
+        });
         // const { data } = await axios.post(
         //   `${import.meta.env.VITE_API_URL}/jwt`,
         //   {
@@ -55,7 +63,9 @@ const AuthProvider = ({ children }) => {
         //   { withCredentials: true }
         // );
         // console.log(data);
+
       } else {
+        localStorage.removeItem("access-token" );
         setUser(null);
         // const { data } = await axios.get(
         //   `${import.meta.env.VITE_API_URL}/logout`,
