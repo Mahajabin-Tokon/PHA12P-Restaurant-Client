@@ -77,7 +77,7 @@ const AuthProvider = ({ children }) => {
         unsubscribe();
       };
     });
-  }, []);
+  }, [axiosPublic]);
 
   const authInfo = {
     handleRegister,
