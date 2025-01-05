@@ -3,8 +3,10 @@ import { Link, Navigate, useLocation, useNavigate } from "react-router-dom";
 import { authContext } from "../AuthProvider/AuthProvider";
 import Swal from "sweetalert2";
 import axios from "axios";
+import useAxiosPublic from "../Hooks/useAxiosPublic";
 
 const Login = () => {
+  const axiosPublic = useAxiosPublic();
   const { handleLogin, handleGoogleLogin, setEmailReference, loading } =
     useContext(authContext);
   const location = useLocation();
@@ -49,19 +51,25 @@ const Login = () => {
   const googleLogin = () => {
     handleGoogleLogin()
       .then((result) => {
-        if (!location.state) {
-          navigate("/");
-          Swal.fire({
-            title: "Successfully logged In!",
-            icon: "success",
-          });
-        } else {
-          navigate(location.state.from);
-          Swal.fire({
-            title: "Successfully logged In!",
-            icon: "success",
-          });
-        }
+        const userInfo = {
+          email: result.user?.email,
+          name: result.user?.displayName,
+        };
+        axiosPublic.post("/users", userInfo).then((res) => {
+          if (!location.state) {
+            navigate("/");
+            Swal.fire({
+              title: "Successfully logged In!",
+              icon: "success",
+            });
+          } else {
+            navigate(location.state.from);
+            Swal.fire({
+              title: "Successfully logged In!",
+              icon: "success",
+            });
+          }
+        });
       })
       .catch((error) => {
         setError("Invalid credentials");

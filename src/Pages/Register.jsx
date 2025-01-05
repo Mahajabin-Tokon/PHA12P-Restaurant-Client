@@ -2,9 +2,12 @@ import React, { useContext, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 import { authContext } from "../AuthProvider/AuthProvider";
+import useAxiosPublic from "../Hooks/useAxiosPublic";
 
 const Register = () => {
-  const { handleRegister, handleGoogleLogin, manageProfile, handleLogout } = useContext(authContext)
+  const axiosPublic = useAxiosPublic();
+  const { handleRegister, handleGoogleLogin, manageProfile, handleLogout } =
+    useContext(authContext);
   const [error, setError] = useState("");
   const navigate = useNavigate();
   const handleSubmit = (event) => {
@@ -37,13 +40,22 @@ const Register = () => {
 
     handleRegister(email, password)
       .then((result) => {
-        manageProfile(name, image);
-        navigate("/");
-        Swal.fire({
-          title: "Successfully Registered!",
-          icon: "success",
+        manageProfile(name, image).then(() => {
+          const user = {
+            name: name,
+            email: email,
+          };
+          axiosPublic.post("/users", user).then((res) => {
+            if (res.data.insertedId) {
+              navigate("/");
+              Swal.fire({
+                title: "Successfully Registered!",
+                icon: "success",
+              });
+              // console.log("User added to db");
+            }
+          });
         });
-        console.log(result);
       })
       .catch((error) => {
         console.log(error);
@@ -53,10 +65,16 @@ const Register = () => {
   const googleLogin = () => {
     handleGoogleLogin()
       .then((result) => {
-        navigate("/");
-        Swal.fire({
-          title: "Successfully Registered!",
-          icon: "success",
+        const userInfo = {
+          email: result.user?.email,
+          name: result.user?.displayName,
+        };
+        axiosPublic.post("/users", userInfo).then((res) => {
+          navigate("/");
+          Swal.fire({
+            title: "Successfully Registered!",
+            icon: "success",
+          });
         });
       })
       .catch((error) => {});
