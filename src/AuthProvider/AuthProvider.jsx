@@ -53,6 +53,7 @@ const AuthProvider = ({ children }) => {
         axiosPublic.post("/jwt", userInfo).then((res) => {
           if (res.data.token) {
             localStorage.setItem("access-token", res.data.token);
+            setLoading(false);
           }
         });
         // const { data } = await axios.post(
@@ -67,12 +68,13 @@ const AuthProvider = ({ children }) => {
       } else {
         localStorage.removeItem("access-token" );
         setUser(null);
+        setLoading(false);
         // const { data } = await axios.get(
         //   `${import.meta.env.VITE_API_URL}/logout`,
         //   { withCredentials: true }
         // );
       }
-      setLoading(false);
+      
       return () => {
         unsubscribe();
       };

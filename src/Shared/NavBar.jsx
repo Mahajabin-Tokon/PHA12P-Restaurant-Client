@@ -3,10 +3,12 @@ import { Link } from "react-router-dom";
 import { authContext } from "../AuthProvider/AuthProvider";
 import { MdShoppingCart } from "react-icons/md";
 import useCart from "../Hooks/useCart";
+import useAdmin from "../Hooks/useAdmin";
 
 const NavBar = () => {
   const { user, handleLogout } = useContext(authContext);
-  const [cart] = useCart()
+  const [cart] = useCart();
+  const [isAdmin] = useAdmin();
   const navOptions = (
     <>
       <li>
@@ -18,6 +20,16 @@ const NavBar = () => {
       <li>
         <Link to="/order/salad">Order</Link>
       </li>
+      {user && isAdmin && (
+        <li>
+          <Link to="/dashboard/adminHome">Dashboard</Link>
+        </li>
+      )}
+      {user && !isAdmin && (
+        <li>
+          <Link to="/dashboard/userHome">Dashboard</Link>
+        </li>
+      )}
       <li>
         <Link to="/dashboard/cart">
           <button className="btn">
@@ -32,9 +44,11 @@ const NavBar = () => {
       <li>
         <Link to="/register">Register</Link>
       </li>
-      {user?.email && <li>
-        <Link to="/register">{user.displayName}</Link>
-      </li>}
+      {user?.email && (
+        <li>
+          <Link to="/register">{user.displayName}</Link>
+        </li>
+      )}
     </>
   );
   return (
